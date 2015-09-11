@@ -25,6 +25,11 @@ npm install -g cecil
 ./yourScript.js
 ```
 
+Alternately, you can use Cecil directly to launch your script:
+```sh
+cecil ./yourScript.js
+```
+
 ## How does it work?
 - It looks through your file for dependencies marked with `//! dependency@version`
 - It will stop looking for dependencies when it hits the first non-comment line
@@ -36,3 +41,4 @@ npm install -g cecil
 ## Caveats
 - Not tested on Windows. (Probably won't work, as it builds tarballs when caching dependencies.)
 - Currently it doesn't preseve existing node_modules. This will be fixed in later versions
+- Not sure if it's possible to pipe stdin to these scripts
