@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-// TODO Clean up some depedencies
+// TODO Clean up some dependencies
 // Some things like shelljs, isThere, and minimist could probably go away
 
 var path = require('path');
@@ -52,7 +52,7 @@ readArgs()
   })
   .finally(function() {
     //console.log('Finished after: ', (new Date() - start));
-  })
+  });
 
 
 function runScript() {
@@ -159,18 +159,17 @@ function loadDependenciesFromCache(args) {
       dest: scriptNodeModules
     });
   } else {
-    return installDependencies(args)
-      .then(function() {
-        shell.mkdir('-p', cacheDir); // Make sure cache directory exists first
-        // And cache the dependencies for later
-        return compress({
-          src: scriptNodeModules,
-          dest: cacheFile,
-          gz: {
-            level: gzCompressionLevel
-          }
-        });
+    return installDependencies(args).then(function() {
+      shell.mkdir('-p', cacheDir); // Make sure cache directory exists first
+      // And cache the dependencies for later
+      return compress({
+        src: scriptNodeModules,
+        dest: cacheFile,
+        gz: {
+          level: gzCompressionLevel
+        }
       });
+    });
   }
 }
 
