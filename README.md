@@ -31,9 +31,11 @@ cecil ./yourScript.js
 ```
 
 ## Why?
+##### I wanted the ability to write small, lightweight, and self-contained scripts
 - Sometimes you just want a single simple script without initializing an entire npm structure
-- Put multiple scripts in the same folder without conflicting dependencies
-- Distribute single files, instead of scripts with package.json files. Not everything needs to be its own module in NPM.
+- You can put multiple scripts in the same folder without conflicting dependencies
+- You can distribute single files, instead of scripts with package.json files
+- Not everything needs to be its own module in NPM
 
 ## How does it work?
 - It looks through your file for dependencies marked with `//! dependency@version`
