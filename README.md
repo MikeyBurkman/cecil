@@ -30,6 +30,11 @@ Alternately, you can use Cecil directly to launch your script:
 cecil ./yourScript.js
 ```
 
+## Why?
+- Sometimes you just want a single simple script without initializing an entire npm structure
+- Put multiple scripts in the same folder without conflicting dependencies
+- Distribute single files, instead of scripts with package.json files. Not everything needs to be its own module in NPM.
+
 ## How does it work?
 - It looks through your file for dependencies marked with `//! dependency@version`
 - It will stop looking for dependencies when it hits the first non-comment line
@@ -37,6 +42,7 @@ cecil ./yourScript.js
   - For subsequent runs, the dependencies are cached so it runs faster
 - When the script finishes, it deletes node_modules
 - As long as your script has the appropriate shebang and is executable, you can execute it as if it were a bash script
+- The file itself is executed how you'd expect it to. Cecil just takes care of installing NPM depedencies for you.
 
 ## Caveats
 - Not tested on Windows. (Probably won't work, as it builds tarballs when caching dependencies.)
