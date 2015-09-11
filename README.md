@@ -51,5 +51,4 @@ cecil ./yourScript.js
 ## Caveats
 - Not tested on Windows. YMMV
 - Currently it doesn't preseve any previously-existing node_modules folder. This will be fixed soon.
-- I don't believe it's possible to pipe stdin to these scripts
 - The first time you call a script, NPM will download all dependencies. I can't figure out how to silence it, so you'll see the output from NPM.
