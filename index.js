@@ -1,23 +1,30 @@
 #! /usr/bin/env node
 
+// TODO Clean up some depedencies
+// Some things like shelljs, isThere, and minimist could probably go away
+
 var path = require('path');
 var fs = require('fs');
+var child_process = require('child_process');
+
 var shell = require('shelljs');
-var spawn = require('child_process').spawn;
 var Promise = require('bluebird');
 var rimraf = require('rimraf');
-var md5 = require('MD5');
+var md5 = require('md5');
 var LineByLineReader = require('line-by-line');
-var _ = require('lodash');
 var isThere = require('is-there');
 var minimist = require('minimist');
+var npm = require('npm'); // Can't seem to Promisify npm commands...
+var targz = require('targz');
+
+var compress = Promise.promisify(targz.compress);
+var decompress = Promise.promisify(targz.decompress);
 
 var argv = minimist(process.argv.slice(2));
 
 var cacheDir = path.join(__dirname, '.cache');
 
 if (argv.c) {
-  // Clear cache
   console.log('Clearing cache...');
   rimraf.sync(cacheDir);
   console.log('Finished');
@@ -29,40 +36,37 @@ var scriptPath = path.join(process.cwd(), scriptName);
 var scriptDir = path.dirname(scriptPath);
 var scriptNodeModules = path.join(scriptDir, 'node_modules');
 
+var start = new Date();
+
+// Cache file gz compression level
+// Between 0 and 9, 0 being none and 9 being max compression
+// We prefer speed, so keep it low
+var gzCompressionLevel = 3;
+
 readArgs()
-  .then(function(args) {
-
-    if (args.length === 0) {
-      // No arguments, no need to worry about loading/installing them
-      return args;
-
-    } else {
-      return loadFromCache(args);
-    }
-
-  })
-  .then(function() {
-
-    // We set the arguments so it looks like it's our script that's actually executing.
-    // Otherwise it just looks like another argument.
-    // We restore the original arguments after executing
-    var oldArgv = process.argv.map(function(argv) {
-      return argv;
-    });
-
-    process.argv = process.argv.splice(2);
-
-    require(scriptPath);
-
-    process.argv = oldArgv;
-  })
-  .then(function() {
-    // Remove the node modules folder if it exists
-    rimraf.sync(scriptNodeModules);
-  })
+  .then(loadDependenciesFromCache)
+  .then(runScript)
+  .then(removeScriptNodeModules)
   .catch(function(err) {
     console.log('Error: ', err);
+  })
+  .finally(function() {
+    //console.log('Finished after: ', (new Date() - start));
+  })
+
+
+function runScript() {
+  return new Promise(function(resolve, reject) {
+    var args = process.argv.slice(3);
+    child_process.fork(scriptPath, args)
+    .on('close', function() {
+      resolve();
+    })
+    .on('error', function(err) {
+      reject(err);
+    });
   });
+}
 
 function readArgs() {
   var args = [];
@@ -70,12 +74,12 @@ function readArgs() {
   return readLines(scriptPath, function(line) {
     line = line.replace(/\s/g, '');
 
-    if (_.startsWith(line, '#') || line.length === 0) {
+    if (startsWith(line, '#') || line.length === 0) {
       // Skip the initial shebang and any blank lines
       return;
     }
 
-    if (_.startsWith(line, '//!')) {
+    if (startsWith(line, '//!')) {
       // Argument!
       var argLine = line.slice('3').split('@');
       args.push({
@@ -83,12 +87,12 @@ function readArgs() {
         version: argLine[1]
       });
 
-    } else if (_.startsWith(line, '//')) {
+    } else if (startsWith(line, '//')) {
       // Comment, can skip
       return;
 
     } else {
-      // Finished reading all the arguments
+      // Real code = finished reading all the arguments
       return false;
     }
 
@@ -97,75 +101,77 @@ function readArgs() {
   });
 }
 
-function installDependencies(args) {
-  return Promise.map(args, installDepedency);
+function startsWith(str, prefix) {
+  return (str.substring(0, prefix.length) === prefix);
 }
 
-function installDepedency(arg) {
+function removeScriptNodeModules() {
+  rimraf.sync(scriptNodeModules);
+}
+
+function installDependencies(args) {
   return new Promise(function(resolve, reject) {
-    spawn('npm', ['install', arg.name + '@' + arg.version], {
-      cwd: scriptDir,
-      stdio: 'inherit'
-    })
-    .on('close', function(exitCode) {
-      if (exitCode == 0) {
-        resolve(arg);
-      } else {
-        reject(new Error('Error: ', exitCode));
+    npm.load(undefined, function(err) {
+      if (err) {
+        return reject(err);
       }
+
+      resolve(Promise.map(args, installDependency));
     });
   });
 }
+
+
+function installDependency(arg) {
+  return new Promise(function(resolve, reject) {
+    var dep = arg.name;
+    if (arg.version) {
+      dep += '@' + arg.version;
+    }
+
+    npm.commands.install([dep], function(err) {
+      if (err) {
+        return reject(err);
+      }
+
+      resolve(arg);
+    });
+  });
+}
+
 
 function getCacheFile(args) {
   var hash = md5(JSON.stringify(args));
   return path.resolve(cacheDir, hash + '.tar.gz');
 }
 
-function loadFromCache(args) {
+
+function loadDependenciesFromCache(args) {
+  if (args.length === 0) {
+      return Promise.resolve();
+  }
+
   var cacheFile = getCacheFile(args);
 
   if (isThere(cacheFile)) {
-    return untarNodeModules(cacheFile)
+    return decompress({
+      src: cacheFile,
+      dest: scriptNodeModules
+    });
   } else {
     return installDependencies(args)
       .then(function() {
-        return cacheNodeModules(args);
-      })
+        shell.mkdir('-p', cacheDir); // Make sure cache directory exists first
+        // And cache the dependencies for later
+        return compress({
+          src: scriptNodeModules,
+          dest: cacheFile,
+          gz: {
+            level: gzCompressionLevel
+          }
+        });
+      });
   }
-}
-
-function cacheNodeModules(args) {
-  var cacheFile = getCacheFile(args);
-
-  return tarNodeModules(cacheFile);
-}
-
-function tarNodeModules(cacheFile) {
-  return new Promise(function(resolve, reject) {
-    shell.mkdir('-p', cacheDir);
-
-    var cmd = 'tar -zcf ' + cacheFile + ' -C ' + scriptNodeModules + ' .';
-    var exitCode = shell.exec(cmd).code;
-    if (exitCode !== 0) {
-      shell.rm(cacheFile);
-      throw new Error('Error tarring: ', cmd, '; Exit code: ', exitCode);
-    }
-
-    resolve();
-  });
-};
-
-function untarNodeModules(cacheFile) {
-  return new Promise(function(resolve, reject) {
-    shell.mkdir('-p', scriptNodeModules);
-    var cmd = 'tar -zxf ' + cacheFile + ' -C ' + scriptNodeModules;
-    var exitCode = shell.exec(cmd).code;
-    if (exitCode !== 0) {
-      throw new Error('Error un-tarring: ', cmd, '; Exit code: ', exitCode);
-    }
-    resolve();
-  });
 }
 
 function clearCache() {
