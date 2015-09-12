@@ -50,5 +50,5 @@ cecil ./yourScript.js
 
 ## Caveats
 - Not tested on Windows. YMMV
-- Currently it doesn't preseve any previously-existing node_modules folder. This will be fixed soon.
 - The first time you call a script, NPM will download all dependencies. I can't figure out how to silence it, so you'll see the output from NPM.
+- Though it backs up any pre-existing node_modules folder, if the Node process is killed while running, the backup won't be restored. In that case, you can retrieve the backup from in the `.cache/` directory.
