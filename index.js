@@ -51,8 +51,8 @@ if (argv.c) {
     .then(readArgs)
     .then(loadDependenciesFromCache)
     .then(runScript)
-    .then(removeScriptNodeModules)
-    .then(restoreExistingNodeModules)
+    .finally(removeScriptNodeModules)
+    .finally(restoreExistingNodeModules)
     .finally(function() {
       //console.log('Finished after: ', (new Date() - start));
     });
