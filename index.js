@@ -28,31 +28,35 @@ if (argv.c) {
   console.log('Clearing cache...');
   rimraf.sync(cacheDir);
   console.log('Finished');
-  process.exit(0);
+
+} else {
+
+  // Execue the script
+
+  var scriptName = argv._[0];
+  var scriptPath = path.join(process.cwd(), scriptName);
+  var scriptDir = path.dirname(scriptPath);
+  var scriptNodeModules = path.join(scriptDir, 'node_modules');
+
+  var backupNodeModules = path.join(cacheDir, 'backupNodeModules.tar.gz');
+
+  var start = new Date();
+
+  // Cache file gz compression level
+  // Between 0 and 9, 0 being none and 9 being max compression
+  // We prefer speed, so keep it low
+  var gzCompressionLevel = 3;
+
+  backupExistingNodeModules()
+    .then(readArgs)
+    .then(loadDependenciesFromCache)
+    .then(runScript)
+    .then(removeScriptNodeModules)
+    .then(restoreExistingNodeModules)
+    .finally(function() {
+      //console.log('Finished after: ', (new Date() - start));
+    });
 }
-
-var scriptName = argv._[0];
-var scriptPath = path.join(process.cwd(), scriptName);
-var scriptDir = path.dirname(scriptPath);
-var scriptNodeModules = path.join(scriptDir, 'node_modules');
-
-var start = new Date();
-
-// Cache file gz compression level
-// Between 0 and 9, 0 being none and 9 being max compression
-// We prefer speed, so keep it low
-var gzCompressionLevel = 3;
-
-readArgs()
-  .then(loadDependenciesFromCache)
-  .then(runScript)
-  .then(removeScriptNodeModules)
-  .catch(function(err) {
-    console.log('Error: ', err);
-  })
-  .finally(function() {
-    //console.log('Finished after: ', (new Date() - start));
-  });
 
 
 function runScript() {
@@ -171,6 +175,33 @@ function loadDependenciesFromCache(args) {
       });
     });
   }
+}
+
+// If a node_modules folder already exists, then copy it somewhere temporary
+function backupExistingNodeModules() {
+  if (!isThere(scriptNodeModules)) {
+    return Promise.resolve();
+  }
+
+  shell.mkdir('-p', cacheDir); // Make sure cache directory exists first
+  return compress({
+    src: scriptNodeModules,
+    dest: backupNodeModules
+  }).then(removeScriptNodeModules);
+}
+
+function restoreExistingNodeModules() {
+  if (!isThere(backupNodeModules)) {
+    return Promise.resolve(false);
+  }
+
+  return decompress({
+    src: backupNodeModules,
+    dest: scriptNodeModules
+  }).then(function() {
+    fs.unlinkSync(backupNodeModules);
+    return true;
+  })
 }
 
 function clearCache() {
