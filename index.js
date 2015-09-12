@@ -38,7 +38,7 @@ if (argv.c) {
   var scriptDir = path.dirname(scriptPath);
   var scriptNodeModules = path.join(scriptDir, 'node_modules');
 
-  var backupNodeModules = path.join(cacheDir, 'backupNodeModules.tar.gz');
+  var backupNodeModules = path.join(cacheDir, 'backup-' + path.basename(scriptName) + '.tar.gz');
 
   var start = new Date();
 
