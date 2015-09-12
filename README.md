@@ -43,7 +43,8 @@ cecil ./yourScript.js
   - The version is optional. Npm will default to the latest if not provided. I don't recommend this.
 - It will stop looking for dependencies when it hits the first non-comment line
 - It then installs all dependencies to node_modules using npm
-  - For subsequent runs, the dependencies are cached so the script starts up faster
+  - If a node_modules folder already exists, it is copied to a backup folder, and then restored when the script has completed
+  - For subsequent runs, the dependencies are all cached in the Cecil folder, so the script starts up faster
 - When the script finishes, it deletes node_modules, leaving your workspace pristine
 - As long as your script has the appropriate shebang and is executable, you can execute it as if it were a bash script
 - The file itself is executed how you'd expect it to, in its own process. Cecil just takes care of installing NPM depedencies for you.
@@ -51,4 +52,4 @@ cecil ./yourScript.js
 ## Caveats
 - Not tested on Windows. YMMV
 - The first time you call a script, NPM will download all dependencies. I can't figure out how to silence it, so you'll see the output from NPM.
-- Though it backs up any pre-existing node_modules folder, if the Node process is killed while running, the backup won't be restored. In that case, you can retrieve the backup from in the `.cache/` directory.
+- Though it backs up any pre-existing node_modules folder, if the Node process is killed while running, the backup won't be restored. In that case, you can retrieve the backup from in the `.cache/` folder in the Cecil install folder.
