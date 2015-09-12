@@ -11,26 +11,32 @@ Cecil lets you run and distribute single-file NodeJS scripts that require extern
 
 //! lodash@3.10.1
 
+// This is a stupid script just to show that you can use functionality from an external library
 var _ = require('lodash');
+var arg = process.argv[0];
 
-console.log('Hello world', _.repeat('!', 3));
+console.log('Hello world', _.repeat(arg, 3));
 
 ```
 
-### Install Cecil globally
+### No need to write package.json!
+
+### Next, install Cecil globally
 
 ```sh
 npm install -g cecil
 ```
 
-### Invoke your script!
+### Now just invoke your script!
 ```sh
-./yourScript.js
+./yourScript.js ha
+> hello world hahaha
 ```
 
 Alternately, you can use Cecil directly to launch your script:
 ```sh
-cecil ./yourScript.js
+cecil ./yourScript.js ha
+> hello world hahaha
 ```
 
 ## Why?
