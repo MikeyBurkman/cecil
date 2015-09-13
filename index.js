@@ -24,7 +24,7 @@ var argv = minimist(process.argv.slice(2));
 
 var cacheDir = path.join(__dirname, '.cache');
 
-if (argv.c) {
+if (argv.c && argv._.length === 0) {
   console.log('Clearing cache...');
   rimraf.sync(cacheDir);
   console.log('Finished');
