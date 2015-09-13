@@ -1,5 +1,5 @@
 # Cecil
-When package.json is just too much work
+When creating package.json is just too much work
 
 ## What does it do?
 Cecil lets you run and distribute single-file NodeJS scripts that require external dependencies, without the need for maintaining an entire module
