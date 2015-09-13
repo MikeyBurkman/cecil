@@ -5,17 +5,18 @@ When creating package.json is just too much work
 Cecil lets you run and distribute single-file NodeJS scripts that require external dependencies, without the need for maintaining an entire module
 
 ## Quick Start
-### Your script looks like this:
+### Write a quick echoRepeat.js script like this:
 ```js
 #! /usr/bin/env cecil
 
 //! lodash@3.10.1
 
 // This is a stupid script just to show that you can use functionality from an external library
+// It takes whatever the argument is, and prints it out 3 times
 var _ = require('lodash');
-var arg = process.argv[0];
+var arg = process.argv[2]; // Remember, arg 0 is the node executable, arg 1 is the script name
 
-console.log('Hello world', _.repeat(arg, 3));
+console.log(_.repeat(arg, 3));
 
 ```
 
@@ -29,14 +30,14 @@ npm install -g cecil
 
 ### Now just invoke your script!
 ```sh
-./yourScript.js ha
-> hello world hahaha
+./echoRepeat.js hello
+> hellohellohello
 ```
 
 Alternately, you can use Cecil directly to launch your script:
 ```sh
-cecil ./yourScript.js ha
-> hello world hahaha
+cecil ./echoRepeat.js hello
+> hellohellohello
 ```
 
 ## Why?
