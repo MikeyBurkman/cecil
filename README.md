@@ -65,4 +65,4 @@ cecil ./echoRepeat.js hello world
 ## Caveats
 - Doesn't want to work on Windows. If you're able to fix it, then by all means submit a pull request.
 - The first time you call a script, NPM will download all dependencies. I can't figure out how to silence it, so you'll see the output from NPM.
-- Though it backs up any pre-existing node_modules folder, if the Node process is killed while running, the backup won't be restored. In that case, you can retrieve the backup from in the `.cache/` folder in the Cecil install folder.
+- Cecil will back up any pre-existing node_modules folder, and try its best to restore that at the end of every run. However, In the case that the backup restore fails, you can retrieve the backup from in the `.cache/` folder in the Cecil install folder. It'll be in a tar.gz format.
