@@ -24,6 +24,8 @@ var argv = minimist(process.argv.slice(2));
 
 var cacheDir = path.join(__dirname, '.cache');
 
+var finalized = false;
+
 if (argv.c && argv._.length === 0) {
   console.log('Clearing cache...');
   rimraf.sync(cacheDir);
@@ -40,8 +42,6 @@ if (argv.c && argv._.length === 0) {
 
   var backupNodeModules = path.join(cacheDir, 'backup-' + path.basename(scriptName) + '.tar.gz');
 
-  var start = new Date();
-
   // Cache file gz compression level
   // Between 0 and 9, 0 being none and 9 being max compression
   // We prefer speed, so keep it low
@@ -51,11 +51,12 @@ if (argv.c && argv._.length === 0) {
     .then(readArgs)
     .then(loadDependenciesFromCache)
     .then(runScript)
-    .finally(removeScriptNodeModules)
-    .finally(restoreExistingNodeModules)
-    .finally(function() {
-      //console.log('Finished after: ', (new Date() - start));
-    });
+    .finally(finalize);
+
+  // Make sure we catch exceptions and signals so we can clean up
+  ['SIGTERM', 'SIGQUIT', 'SIGINT', 'uncaughtException'].forEach(function(key) {
+    process.on(key, finalize);
+  });
 }
 
 
@@ -105,12 +106,29 @@ function readArgs() {
   });
 }
 
+function finalize() {
+  return new Promise(function(resolve, reject) {
+    if (finalized) {
+      // Make sure we only finalize once
+      resolve();
+      return;
+    }
+
+    finalized = true;
+    return removeScriptNodeModules()
+      .then(restoreExistingNodeModules)
+      .then(function() {
+        process.exit(0);
+      });
+  });
+}
+
 function startsWith(str, prefix) {
   return (str.substring(0, prefix.length) === prefix);
 }
 
 function removeScriptNodeModules() {
-  rimraf.sync(scriptNodeModules);
+  return Promise.promisify(rimraf)(scriptNodeModules);
 }
 
 function installDependencies(args) {
@@ -202,10 +220,6 @@ function restoreExistingNodeModules() {
     fs.unlinkSync(backupNodeModules);
     return true;
   })
-}
-
-function clearCache() {
-  rimraf.sync(scriptNodeModules);
 }
 
 function readLines(file, lineFn) {
