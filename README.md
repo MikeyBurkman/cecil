@@ -63,6 +63,7 @@ cecil ./echoRepeat.js hello world
 - The file itself is executed how you'd expect it to, in its own process. Cecil just takes care of installing NPM depedencies for you.
 
 ## Caveats
+- Because it has to temporarily create a node_modules folder, you can't simultaneously run two scripts at the same time that reside in the same folder. I'm not sure there's a good way around this, unfortunately.
 - Doesn't want to work on Windows. If you're able to fix it, then by all means submit a pull request.
 - The first time you call a script, NPM will download all dependencies. I can't figure out how to silence it, so you'll see the output from NPM.
 - Cecil will back up any pre-existing node_modules folder, and try its best to restore that at the end of every run. However, In the case that the backup restore fails, you can retrieve the backup from in the `.cache/` folder in the Cecil install folder. It'll be in a tar.gz format.
