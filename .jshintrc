@@ -1,0 +1,21 @@
+
+{
+  "camelcase"     : true,
+  "curly"         : false,
+  "eqeqeq"        : true,
+  "evil"          : false,
+  "forin"         : false,
+  "immed"         : true,
+  "latedef"       : false,
+  "newcap"        : true,
+  "noarg"         : true,
+  "node"          : true,
+  "noempty"       : true,
+  "nonew"         : true,
+  "plusplus"      : false,
+  "quotmark"      : "single",
+  "sub"           : true,
+  "trailing"      : true,
+  "undef"         : true,
+  "unused"        : "vars"
+}

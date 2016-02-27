@@ -1,43 +1,47 @@
-# Cecil
+# cecil
 When creating package.json is just too much work
 
 ## What does it do?
-Cecil lets you run and distribute single-file NodeJS scripts that require external dependencies, without the need for maintaining an entire module
+cecil lets you run (and distribute) single-file NodeJS scripts that require external dependencies, without the need for maintaining an entire module and package.json
 
 ## Quick Start
 ### Write a quick echoRepeat.js script like this:
 ```js
 #! /usr/bin/env cecil
 
-//! lodash@3.10.1
-
-// This is a stupid script just to show that you can use functionality from an external library
+// This is a simple script just to show that you can use functionality from an npm module.
 // It takes whatever the argument is, and prints it out 3 times
-var _ = require('lodash');
 
-// Like a normal nodejs script, arg[0] is the node executable, and arg[1] is the script name
-// So for this, take all args after the first 2
+// In Cecil scripts, there is a global "include" function provided to get npm packages.
+var _ = include('lodash', '4.5.1');
+
+// Cecil is the first argument, the name of this script is the second.
+// So all arguments start at index 2.
 var args = process.argv.slice(2);
 
 console.log(_.repeat(JSON.stringify(args), 3));
-
 ```
 
-### No need to write package.json!
+That's it!
 
-### Next, install Cecil globally
+### Next, install cecil globally
 
 ```sh
 npm install -g cecil
 ```
 
 ### Now just invoke your script!
+(Make sure the script is executable, of course)
+```sh
+chmod a+x echoRepeat.js
+```
+And invoke the script
 ```sh
 ./echoRepeat.js hello world
 > ["hello","world"]["hello","world"]["hello","world"]
 ```
 
-Alternately, you can use Cecil directly to launch your script:
+Alternately, you can use cecil directly to launch your script:
 ```sh
 cecil ./echoRepeat.js hello world
 > ["hello","world"]["hello","world"]["hello","world"]
@@ -45,25 +49,21 @@ cecil ./echoRepeat.js hello world
 
 ## Why?
 ##### I wanted the ability to write small, lightweight, and self-contained scripts
-- Sometimes you just want a single simple script without initializing an entire npm structure
 - You can put multiple scripts in the same folder without conflicting dependencies
 - You can distribute single files, instead of scripts with package.json files
-- Not everything needs to be its own module in NPM
-- Node is cooler than Perl
+- You can experiment with new npm modules very easily. (Even compare different versions of the same module.)
+- I personally prefer scripting in Node rather than Perl/Bash/etc
 
 ## How does it work?
-- It looks through your file for dependencies marked with `//! dependency@version`
-  - The version is optional. Npm will default to the latest if not provided. I don't recommend this.
-- It will stop looking for dependencies when it hits the first non-comment line
-- It then installs all dependencies to node_modules using npm
-  - If a node_modules folder already exists, it is copied to a backup folder, and then restored when the script has completed
-  - For subsequent runs, the dependencies are all cached in the Cecil folder, so the script starts up faster
-- When the script finishes, it deletes node_modules, leaving your workspace pristine
-- As long as your script has the appropriate shebang and is executable, you can execute it as if it were a bash script
-- The file itself is executed how you'd expect it to, in its own process. Cecil just takes care of installing NPM depedencies for you.
+- It parses your code for calls to `include(name, version)` to find your dependencies
+  - Both name and version are required
+  - **Both name and version must be LITERAL values.** IE: they must both be strings.
+  - (Dependency resolution is done before the script is run. Dynamic loading of modules would require everything to be async, and I didn't feel that was worth it.)
+  - **Currently only absolute version numbers are supported.** No wildcards or ranges.
+- It will use npm to install these modules into a temp directory (somewhere in `os.tmpdir()`)
+- It even supports concurrently loading different versions of the same module! (I have no idea why you'd want to do that but it was easy to implement.)
+- You still use `require()` for core modules, like `path` or `fs`
 
-## Caveats
-- Because it has to temporarily create a node_modules folder, you can't simultaneously run two scripts at the same time that reside in the same folder. I'm not sure there's a good way around this, without major changes to how Cecil works.
-- It doesn't want to work on Windows. If you're able to fix it, then by all means submit a pull request.
-- The first time you call a script, NPM will download all dependencies. I can't figure out how to silence it, so you'll see the output from NPM.
-- Cecil will back up any pre-existing node_modules folder, and try its best to restore that at the end of every run. However, In the case that the backup restore fails, you can retrieve the backup from in the `.cache/` folder in the Cecil install folder. It'll be in a tar.gz format.
+## TODO
+- Add ability to clear out the temporary cache. Currently everything is stored in a cache in a temp directory as dictated by the os. Just run `cecil` without any arguments to print out the location of that cache.
+- I'll probably change `include()` to work with only one argument, but ONLY if it's a core module like `path`. That way you'll never have to use `require()` in a cecil script

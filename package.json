@@ -1,19 +1,17 @@
 {
   "name": "cecil",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "For running single-file NodeJS scripts with external dependencies",
   "main": "index.js",
   "bin": "./index.js",
   "dependencies": {
-    "bluebird": "^2.10.0",
-    "is-there": "^4.0.0",
-    "line-by-line": "^0.1.4",
-    "md5": "^2.0.0",
-    "minimist": "^1.2.0",
-    "npm": "^2.14.3",
-    "rimraf": "^2.4.3",
-    "shelljs": "^0.5.3",
-    "targz": "^1.0.1"
+    "bluebird": "3.3.3",
+    "esprima": "2.7.2",
+    "estraverse": "4.1.1",
+    "is-there": "4.3.1",
+    "mv": "2.1.1",
+    "npmi": "1.0.1",
+    "rmdir": "1.2.0"
   },
   "repository": {
     "type": "git",
