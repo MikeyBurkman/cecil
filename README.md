@@ -5,12 +5,10 @@ When creating package.json is just too much work
 cecil lets you run (and distribute) single-file NodeJS scripts that require external dependencies, without the need for maintaining an entire module and package.json
 
 ## Quick Start
-### Write a quick echoRepeat.js script like this:
+### Write a quick echoRepeat.js script like this. This script will just take the arguments and print them out 3 times.
 ```js
 #! /usr/bin/env cecil
-
-// This is a simple script just to show that you can use functionality from an npm module.
-// It takes whatever the argument is, and prints it out 3 times
+// Note that the shebang is only required if we want to make this script executable
 
 // In Cecil scripts, there is a global "include" function provided to get npm packages.
 var _ = include('lodash', '4.5.1');
@@ -19,7 +17,8 @@ var _ = include('lodash', '4.5.1');
 // So all arguments start at index 2.
 var args = process.argv.slice(2);
 
-console.log(_.repeat(JSON.stringify(args), 3));
+var argString = JSON.stringify(args);
+console.log(_.repeat(argString, 3));
 ```
 
 That's it!
@@ -41,7 +40,7 @@ And invoke the script
 > ["hello","world"]["hello","world"]["hello","world"]
 ```
 
-Alternately, you can use cecil directly to launch your script:
+Alternately, you can use cecil directly to launch your script. No shebang is required in this case.
 ```sh
 cecil ./echoRepeat.js hello world
 > ["hello","world"]["hello","world"]["hello","world"]
@@ -67,3 +66,4 @@ cecil ./echoRepeat.js hello world
 ## TODO
 - Add ability to clear out the temporary cache. Currently everything is stored in a cache in a temp directory as dictated by the os. Just run `cecil` without any arguments to print out the location of that cache.
 - I'll probably change `include()` to work with only one argument, but ONLY if it's a core module like `path`. That way you'll never have to use `require()` in a cecil script
+- Add command to add an include for the latest version of some dependency. I don't like having to look up version numbers elsewhere.
