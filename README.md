@@ -4,11 +4,13 @@ When creating package.json is just too much work
 ## What does it do?
 cecil lets you run (and distribute) single-file NodeJS scripts that require external dependencies, without the need for maintaining an entire module and package.json
 
+A REPL is also included, to give you a node-like repl that allows you to include (and automatically install) npm dependencies while in the shell
+
 ## Quick Start
-### Write a quick echoRepeat.js script like this. This script will just take the arguments and print them out 3 times.
+### Write a quick testFile.js script like this:
 ```js
-#! /usr/bin/env cecil
-// Note that the shebang is only required if we want to make this script executable
+// This is a simple script just to show that you can use functionality from an npm module.
+// It takes whatever the arguments are, and filters out anything longer than 3 characters
 
 // In Cecil scripts, there is a global "include" function provided to get npm packages.
 var _ = include('lodash', '4.5.1');
@@ -17,8 +19,11 @@ var _ = include('lodash', '4.5.1');
 // So all arguments start at index 2.
 var args = process.argv.slice(2);
 
-var argString = JSON.stringify(args);
-console.log(_.repeat(argString, 3));
+var filtered = _.filter(args, function(arg) {
+  return arg.length <= 3;
+});
+
+console.log(filtered);
 ```
 
 That's it!
@@ -30,20 +35,37 @@ npm install -g cecil
 ```
 
 ### Now just invoke your script!
-(Make sure the script is executable, of course)
 ```sh
-chmod a+x echoRepeat.js
-```
-And invoke the script
-```sh
-./echoRepeat.js hello world
-> ["hello","world"]["hello","world"]["hello","world"]
+cecil ./testFile foo blah bar
+> [ 'foo', 'bar' ]
 ```
 
-Alternately, you can use cecil directly to launch your script. No shebang is required in this case.
+### You can even do some unix magic and make the scripts executable!
+
+First, make sure the script is executable, of course
 ```sh
-cecil ./echoRepeat.js hello world
-> ["hello","world"]["hello","world"]["hello","world"]
+chmod a+x testFile.js
+```
+Next, add the correct shebang to the top of the file:
+```js
+#! /usr/bin/env cecil
+...
+```
+
+And then invoke the script
+```sh
+./testFile.js foo blah bar
+> [ 'foo', 'bar' ]
+```
+
+## REPL
+A REPL is provided so you can interactively work with npm dependencies without setting up an entire project:
+```sh
+cecil-repl
+> var lodash = include('lodash', '4.5.1');
+undefined
+> lodash.filter([1,2,3], function(x) { return x % 2 == 1; });
+[ 1, 3 ]
 ```
 
 ## Why?
@@ -64,6 +86,7 @@ cecil ./echoRepeat.js hello world
 - You still use `require()` for core modules, like `path` or `fs`
 
 ## TODO
-- Add ability to clear out the temporary cache. Currently everything is stored in a cache in a temp directory as dictated by the os. Just run `cecil` without any arguments to print out the location of that cache.
-- I'll probably change `include()` to work with only one argument, but ONLY if it's a core module like `path`. That way you'll never have to use `require()` in a cecil script
-- Add command to add an include for the latest version of some dependency. I don't like having to look up version numbers elsewhere.
+- Add ability to clear out (and maybe view) the cecil npm cache.
+- Make `include()` work with actual semver values. Will require looking through the cache for a version that's valid for the requested version.
+- In the REPL, there is currently no support for multi-line inputs. Need to figure out how best to handle that.
+- The include function only works as a standalone variable declaration. Need to parse it differently so it can work in other places.
