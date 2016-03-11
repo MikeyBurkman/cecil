@@ -70,7 +70,7 @@ undefined
 
 ## Why?
 ##### I wanted the ability to write small, lightweight, and self-contained scripts
-- Write self-contained *gists* of node code
+- Write self-contained **gists** of node code
 - You can put multiple scripts in the same folder without conflicting dependencies
 - You can distribute single files, instead of scripts with package.json files
 - You can experiment with new npm modules very easily. (Even compare different versions of the same module.)
