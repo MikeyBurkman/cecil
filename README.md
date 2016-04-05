@@ -82,7 +82,7 @@ undefined
   - **Both name and version must be LITERAL values.** IE: they must both be strings.
   - (Dependency resolution is done before the script is run. Dynamic loading of modules would require everything to be async, and I didn't feel that was worth it.)
   - **Currently only absolute version numbers are supported.** No wildcards or ranges.
-- It will use npm to install these modules into a temp directory (somewhere in `os.tmpdir()`)
+- It will use npm to install these modules into the `.cecil` directory in your home directory
 - It even supports concurrently loading different versions of the same module! (I have no idea why you'd want to do that but it was easy to implement.)
 - You still use `require()` for core modules, like `path` or `fs`
 
