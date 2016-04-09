@@ -15,35 +15,43 @@ function start() {
     eval: evalCmd
   });
 
-  replServer.context.include = cecil.includeDependency;
-}
+  setDependencies({});
 
-function evalCmd(cmd, context, filename, callback) {
-
-  function parseForDependencies() {
-    return parser.parse({
-      fileName: 'repl',
-      contents: cmd
-    });
+  function setDependencies(deps) {
+    replServer.context.include = function(name, version) {
+      return cecil.includeDependency(deps, name, version);
+    };
   }
 
-  function executeCmd() {
-    var script = new vm.Script(cmd);
-    return script.runInContext(context);
+  function evalCmd(cmd, context, filename, callback) {
+
+    function parseForDependencies() {
+      return parser.parse({
+        fileName: 'repl',
+        contents: cmd
+      });
+    }
+
+    function executeCmd() {
+      var script = new vm.Script(cmd);
+      return script.runInContext(context);
+    }
+
+    Promise.resolve()
+      .then(parseForDependencies)
+      .then(cecil.loadDependencies)
+      .then(setDependencies)
+      .then(executeCmd)
+      .then(function(result) {
+        callback(null, result);
+      })
+      .catch(parser.ParseError, function(err) {
+        if (err.isBadJs) {
+          throw err;
+        }
+        callback(err.message);
+      })
+      .catch(callback);
   }
 
-  Promise.resolve()
-    .then(parseForDependencies)
-    .then(cecil.downloadDependencies)
-    .then(executeCmd)
-    .then(function(result) {
-      callback(null, result);
-    })
-    .catch(parser.ParseError, function(err) {
-      if (err.isBadJs) {
-        throw err;
-      }
-      callback(err.message);
-    })
-    .catch(callback);
 }
