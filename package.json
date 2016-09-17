@@ -1,23 +1,30 @@
 {
   "name": "cecil",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "For running single-file NodeJS scripts with external dependencies",
   "main": "index.js",
   "bin": {
     "cecil": "./bin/cli.js",
     "cecil-repl": "./bin/repl.js"
   },
+  "scripts": {
+    "test": "mocha $(find ./lib -name \"*.test.js\")"
+  },
   "dependencies": {
-    "bluebird": "3.3.3",
-    "esprima": "2.7.2",
-    "estraverse": "4.1.1",
+    "bluebird": "3.4.6",
+    "esprima": "3.0.0",
+    "estraverse": "4.2.0",
     "is-there": "4.3.1",
-    "latest-version": "^2.0.0",
+    "latest-version": "2.0.0",
     "mv": "2.1.1",
     "npmi": "1.0.1",
-    "os-homedir": "^1.0.1",
+    "os-homedir": "1.0.1",
     "rmdir": "1.2.0",
-    "semver": "^5.1.0"
+    "semver": "5.3.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.0.2"
   },
   "repository": {
     "type": "git",

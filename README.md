@@ -84,5 +84,4 @@ undefined
 - **Both name and version must be LITERAL values.** IE: they must both be strings. (Of course, version is optional.)
   - (Dependency resolution is done before anything is run. Dynamic loading of modules would require everything to be async, and I didn't feel that was worth it.)
 - In the REPL, there is currently no support for multi-line commands. Need to figure out how best to handle that.
-- The `include()` function only works as a standalone variable declaration. For instance, you MUST always do `var foo = include('foo');` I need to parse it differently so it can work in other places.
 - You can't `require()` other cecil scripts. Right now the best you can do is to use `process.argv[0]` (which is the cecil executable) to spawn a new process calling the other script. I plan to add support for `include('./foo.js')` in a future version of cecil.
