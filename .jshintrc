@@ -1,5 +1,11 @@
-
 {
+  "globals": {
+    "include": true,
+    "it": true,
+    "describe": true,
+    "afterEach": true,
+    "beforeEach": true
+  },
   "camelcase"     : true,
   "curly"         : false,
   "eqeqeq"        : true,
