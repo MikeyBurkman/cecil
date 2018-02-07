@@ -85,3 +85,7 @@ undefined
   - (Dependency resolution is done before anything is run. Dynamic loading of modules would require everything to be async, and I didn't feel that was worth it.)
 - In the REPL, there is currently no support for multi-line commands. Need to figure out how best to handle that.
 - You can't `require()` other cecil scripts. Right now the best you can do is to use `process.argv[0]` (which is the cecil executable) to spawn a new process calling the other script. I plan to add support for `include('./foo.js')` in a future version of cecil.
+
+## Help!
+#### I changed my version of Node and now my compiled dependencies won't work!
+All dependencies are stored in the `~/.cecil` directory. Simply delete that directory and Cecil will re-download any dependencies next time you need them. (In a future version, Cecil will probably look for the NVM_HOME env var in order to pick the correct directory based on the version of node currently installed.)
